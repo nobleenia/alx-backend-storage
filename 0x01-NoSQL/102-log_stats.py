@@ -25,7 +25,7 @@ def log_stats():
         {"method": "GET", "path": "/status"})
 
     # Displaying the results
-    print(f"{sum(counts.values())} logs")  # Total logs are the sum of all method counts
+    print(f"{sum(counts.values())} logs")  # Total logs
     print("Methods:")
     for method in methods:
         print(f"\tmethod {method}: {counts[method]}")
@@ -36,7 +36,7 @@ def log_stats():
     ip_counts = nginx_collection.aggregate([
         {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
-        {"$limit": 10}  # Limiting to top 10 results within the aggregation pipeline
+        {"$limit": 10}  # Limiting to top 10 results
     ])
 
     for ip in ip_counts:

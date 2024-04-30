@@ -27,16 +27,5 @@ def log_stats():
     status_checks = collection.count_documents({'method': 'GET', 'path': '/status'})
     print(f"{status_checks} status check")
 
-    # Display the top 10 most frequent IP addresses (added requirement)
-    print("IPs:")
-    top_ips = collection.aggregate([
-        {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
-        {"$limit": 10}
-    ])
-
-    for ip in top_ips:
-        print(f"\t{ip['_id']}: {ip['count']}")
-
 if __name__ == "__main__":
     log_stats()
