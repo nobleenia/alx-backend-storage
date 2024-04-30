@@ -17,10 +17,12 @@ def log_stats():
 
     # Get the counts for different HTTP methods
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
-    counts = {method: nginx_collection.count_documents({"method": method}) for method in methods}
+    counts = {method: nginx_collection.count_documents(
+        {"method": method}) for method in methods}
 
     # Count foar GET method with path "/status"
-    status_check_count = nginx_collection.count_documents({"method": "GET", "path": "/status"})
+    status_check_count = nginx_collection.count_documents(
+        {"method": "GET", "path": "/status"})
 
     # Displaying the results
     print(f"{sum(counts.values())} logs")  # Total logs are the sum of all method counts

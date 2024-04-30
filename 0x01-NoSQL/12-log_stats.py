@@ -12,17 +12,31 @@ def log_stats():
     client = MongoClient('mongodb://127.0.0.1:27017')
     collection = client.logs.nginx
 
-    print(f'{collection.estimated_document_count()} logs')
+    # Fetch and print the total number of documents
+    total_logs = collection.count_documents({})
+    print(f"{total_logs} logs")
 
+    # Display method usage statistics
     methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-    print('Methods:')
+    print("Methods:")
+    for method in methods:
+        method_count = collection.count_documents({'method': method})
+        print(f"\tmethod {method}: {method_count}")
 
-    for req in methods:
-        print('\tmethods {}: {}'.format(req,
-            collection.count_documents({'method': req})))
+    # Count and display the number of GET requests to the '/status' path
+    status_checks = collection.count_documents({'method': 'GET', 'path': '/status'})
+    print(f"{status_checks} status check")
 
-    print('{} status check'.format(collection.count_documents(
-        {'method': 'GET', 'path': '/status'})))
+    # Display the top 10 most frequent IP addresses (added requirement)
+    print("IPs:")
+    top_ips = collection.aggregate([
+        {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ])
+
+    for ip in top_ips:
+        print(f"\t{ip['_id']}: {ip['count']}")
 
 if __name__ == "__main__":
     log_stats()

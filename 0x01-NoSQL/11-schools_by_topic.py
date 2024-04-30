@@ -4,7 +4,7 @@ Returns the list of school having a specific topic
 """
 
 
-def schools_by_topic(mongo_collection: Collection, topic):
+def schools_by_topic(mongo_collection, topic):
     """
     Returns a list of school documents that include
     a specific topic in their topics array.
