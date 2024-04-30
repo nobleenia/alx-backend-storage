@@ -2,8 +2,6 @@
 """
 Inserts a new document in a collection based on kwargs
 """
-from pymongo.collection import Collection
-from bson.objectid import ObjectId
 
 
 def insert_school(mongo_collection, **kwargs):

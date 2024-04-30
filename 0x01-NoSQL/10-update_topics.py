@@ -2,7 +2,6 @@
 """
 Changes all topics of a school document based on the name
 """
-from pymongo.collection import Collection
 
 
 def update_topics(mongo_collection, name, topics):

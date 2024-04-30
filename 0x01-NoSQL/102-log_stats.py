@@ -15,31 +15,30 @@ def log_stats():
     db = client.logs
     nginx_collection = db.nginx
 
-    # Total number of documents
-    total_logs = nginx_collection.count_documents({})
-    print(f"{total_logs} logs")
-
-    # Methods statistics
+    # Get the counts for different HTTP methods
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    counts = {method: nginx_collection.count_documents({"method": method}) for method in methods}
+
+    # Count foar GET method with path "/status"
+    status_check_count = nginx_collection.count_documents({"method": "GET", "path": "/status"})
+
+    # Displaying the results
+    print(f"{sum(counts.values())} logs")  # Total logs are the sum of all method counts
     print("Methods:")
     for method in methods:
-        count = nginx_collection.count_documents({"method": method})
-        print(f"    method {method}: {count}")
-
-    # Documents with method GET and path /status
-    status_check = nginx_collection.count_documents({"method": "GET", "path": "/status"})
-    print(f"{status_check} status check")
+        print(f"\tmethod {method}: {counts[method]}")
+    print(f"{status_check_count} status check")
 
     # Top 10 most present IPs
-    top_ips = nginx_collection.aggregate([
+    print("IPs:")
+    ip_counts = nginx_collection.aggregate([
         {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
-        {"$limit": 10}
+        {"$limit": 10}  # Limiting to top 10 results within the aggregation pipeline
     ])
 
-    print("IPs:")
-    for ip in top_ips:
-        print(f"    {ip['_id']}: {ip['count']}")
+    for ip in ip_counts:
+        print(f"\t{ip['_id']}: {ip['count']}")
 
 if __name__ == "__main__":
     log_stats()

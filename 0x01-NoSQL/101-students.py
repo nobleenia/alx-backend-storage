@@ -2,7 +2,6 @@
 """
 Returns all students sorted by average score
 """
-from pymongo.collection import Collection
 
 
 def top_students(mongo_collection):
@@ -16,12 +15,8 @@ def top_students(mongo_collection):
     """
     pipeline = [
         {
-            "$unwind": "$topics"  # Deconstructs 'topics' array field from each input document
-        },
-        {
-            "$group": {  # Groups input documents by the student's id (and name)
-                "_id": "$_id",
-                "name": {"$first": "$name"},
+            "$project": {  # Groups input documents by the student's id (and name)
+                "name": "$name",
                 "averageScore": {"$avg": "$topics.score"}  # Computes average score
             }
         },
@@ -31,5 +26,5 @@ def top_students(mongo_collection):
     ]
 
     # Execute the aggregation pipeline
-    result = list(mongo_collection.aggregate(pipeline))
+    result = mongo_collection.aggregate(pipeline)
     return result
