@@ -1,42 +1,55 @@
 #!/usr/bin/env python3
-
 import requests
-import time
-from functools import lru_cache
+import redis
+from functools import wraps
 
+# Establish a connection to the Redis server
+r = redis.Redis()
 
-# Dictionary to track URL accesses
-url_access_count = {}
-
-
-# Decorator to cache results and track URL accesses
-def cache_and_track(func):
-    @lru_cache(maxsize=100)
+def count_url_access(func):
+    """
+    Decorator to count the number of times a URL has been accessed.
+    """
+    @wraps(func)
     def wrapper(url):
-        # Make the request to the URL and fetch the content
-        response = requests.get(url)
-        page_content = response.text
-
-        # Update the URL access count
-        url_access_count[url] = url_access_count.get(url, 0) + 1
-
-        time.sleep(10)  # Simulate slow response
-
-        return page_content
-
+        count_key = f"count:{url}"
+        r.incr(count_key)
+        return func(url)
     return wrapper
 
+def cache_response(func):
+    """
+    Decorator to cache the response of a URL for 10 seconds.
+    """
+    @wraps(func)
+    def wrapper(url):
+        cache_key = f"cache:{url}"
+        # Check if the cached data exists
+        cached_data = r.get(cache_key)
+        if cached_data:
+            return cached_data.decode()
+        # If no cache, fetch data, cache it, and return
+        result = func(url)
+        r.setex(cache_key, 10, result)  # Cache the result for 10 seconds
+        return result
+    return wrapper
 
-# Function to get the page content (decorated with cache_and_track)
-@cache_and_track
+@count_url_access
+@cache_response
 def get_page(url: str) -> str:
-    return url
+    """
+    Fetches the HTML content of a URL, caches it for 10 seconds, and counts the access.
 
+    Args:
+    url (str): The URL to fetch.
 
-# Example usage
+    Returns:
+    str: HTML content of the URL.
+    """
+    response = requests.get(url)
+    return response.text
+
 if __name__ == "__main__":
-    url_ = "http://slowwly.robertomurray.co.uk/delay/1000/url/"
-    url = f"{url_}http://www.google.com"
-    print(get_page(url))
-    print(get_page(url))
-    print(f"Access count for {url}: {url_access_count[url]}")
+    url = "http://slowwly.robertomurray.co.uk/delay/3000/url/http://www.google.com"
+    print(get_page(url))  # First call, should be slow and cached
+    print(get_page(url))  # Second call, should be fast due to cache
