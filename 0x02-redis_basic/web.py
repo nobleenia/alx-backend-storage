@@ -12,7 +12,8 @@ from functools import wraps
 
 
 # Establish a connection to the Redis server
-r = redis.Redis(decode_responses=True)  # Use decode_responses to handle string decoding automatically
+r = redis.Redis(decode_responses=True)
+# Use decode_responses to handle string decoding automatically
 
 
 def count_url_access(func):
@@ -36,7 +37,7 @@ def cache_response(func):
         cache_key = f"cache:{url}"
         cached_data = r.get(cache_key)
         if cached_data:
-            return cached_data  # Return decoded data directly from Redis
+            return cached_data  # Return decoded data from Redis
         # If no cache, fetch data, cache it, and return
         result = func(url)
         # Ensure the result is stored as a string,
@@ -66,6 +67,7 @@ def get_page(url: str) -> str:
 
 
 if __name__ == "__main__":
-    url = "http://slowwly.robertomurray.co.uk/delay/3000/url/http://www.google.com"
-    print(get_page(url))  # First call, should be slow and cached
-    print(get_page(url))  # Second call, should be fast due to cache
+    url = "http://slowwly.robertomurray.co.uk/delay/3000/url/"
+    url = f"{url_}http://www.google.com"
+    print(get_page(url))  # First call, slow and cached
+    print(get_page(url))  # Second call, fast due to cache
