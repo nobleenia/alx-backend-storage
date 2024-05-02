@@ -31,9 +31,10 @@ def count_calls(method: Callable) -> Callable:
         return method(self, *args, **kwargs)
     return wrapper
 
+
 def call_history(method: Callable) -> Callable:
     """
-    Decorator to log the history of inputs and 
+    Decorator to log the history of inputs and
     outputs for a function.
 
     Args:
@@ -49,44 +50,46 @@ def call_history(method: Callable) -> Callable:
 
         # Normalize and store inputs
         self._redis.rpush(input_key, str(args))
-        
+
         # Execute the function and store the output
         result = method(self, *args, **kwargs)
         self._redis.rpush(output_key, str(result))
-        
+
         return result
     return wrapper
+
 
 def replay(method: Callable):
     """
     Function to display the history of calls of a
     particular method.
-    
+
     Args:
-    method (Callable): The method to replay the call 
+    method (Callable): The method to replay the call
     history for.
     """
     instance = method.__self__
     method_name = method.__qualname__
     input_key = f"{method_name}:inputs"
     output_key = f"{method_name}:outputs"
-    
+
     inputs = instance._redis.lrange(input_key, 0, -1)
     outputs = instance._redis.lrange(output_key, 0, -1)
-    
+
     print(f"{method_name} was called {len(inputs)} times:")
     for input_str, output_str in zip(inputs, outputs):
         print(f"{method_name}(*{input_str.decode()}) -> {output_str.decode()}")
 
+
 class Cache:
     """
-    A Cache class that allows storing and retrieving 
+    A Cache class that allows storing and retrieving
     data from a Redis datastore using unique keys.
     """
-    
+
     def __init__(self):
         """
-        Initializes a new Cache instance, setting up a 
+        Initializes a new Cache instance, setting up a
         Redis client and flushing any existing data.
         """
         self._redis = redis.Redis()
